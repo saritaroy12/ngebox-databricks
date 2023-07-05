@@ -1,0 +1,634 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for Lambda and StepFunction.
+Parameters:
+  ClusterStartLambdaName:
+    Type: String
+  TableLoadLambdaName:
+    Type: String
+  ATLValidationLambdaName:
+    Type: String
+  MasterLambdaName:
+    Type: String
+  JobExecutionLambdaName:
+    Type: String
+  TableUpdateLambdaName:
+    Type: String
+  S3FileLoaderLambdaName:
+    Type: String
+  ClusterTerminateLambdaName:
+    Type: String
+  RestApiLambdasName:
+    Type: String
+  ClusterIds:
+    Type: String
+  ProcLoadJobIds:
+    Type: String
+  ProcUpdateJobIds:
+    Type: String
+  ATLJobIds:
+    Type: String
+  MetadataJobIds:
+    Type: String
+  S3JobIds:
+    Type: String
+  DBTokenSecrets:
+    Type: String
+  DBURLs:
+    Type: String
+  LambdaCodePath:
+    Type: String
+  LambdaCodePath1:
+    Type: String
+  LambdaCodePath2:
+    Type: String
+  LambdaCodePath3:
+    Type: String
+  LambdaCodePath4:
+    Type: String
+  LambdaCodePath5:
+    Type: String
+  LambdaCodePath6:
+    Type: String
+  LambdaCodePath7:
+    Type: String
+  LambdaCodePath8:
+    Type: String
+  LambdaLayerPath:
+    Type: String
+  Layer:
+    Type: String
+  CodeBucketName:
+    Type: String
+  LambdaRoleName:
+    Type: String
+  StepFunctionRoleName:
+    Type: String
+  SecurityGroupsID:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+  SubnetID:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+Resources:
+  MyStateMachineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/vendedlogs/states/NGE-Box-Usecase-Step-Function-Logs
+  MyStateMachineLogGroups:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/vendedlogs/states/NGE-Box-Master-Step-Function-Logs
+  StepFunction:
+    Type: 'AWS::StepFunctions::StateMachine'
+    Properties:
+      "StateMachineName" : "NGE-Box-Usecase-Step-Function"
+      "StateMachineType" : "STANDARD"
+      "LoggingConfiguration":
+          Destinations:
+            - CloudWatchLogsLogGroup:
+               LogGroupArn: !GetAtt MyStateMachineLogGroup.Arn
+          IncludeExecutionData: True
+          Level: ALL
+      "DefinitionString": !Sub |
+        {
+          "Comment": "A description of my state machine",
+          "StartAt": "Map",
+          "States": {
+            "Map": {
+              "Type": "Map",
+              "ItemsPath": "$.Metadata",
+              "ResultPath": "$",
+              "MaxConcurrency": 1,
+              "ItemProcessor": {
+                "ProcessorConfig": {
+                  "Mode": "INLINE"
+                },
+                "StartAt": "Lambda Invoke",
+                "States": {
+                  "Lambda Invoke": {
+                    "Type": "Task",
+                    "Resource": "${JobExecutionLambdaFunction.Arn}",
+                    "InputPath": "$",
+                    "Retry": [
+                      {
+                        "ErrorEquals": [
+                          "Lambda.ServiceException",
+                          "Lambda.AWSLambdaException",
+                          "Lambda.SdkClientException",
+                          "Lambda.TooManyRequestsException"
+                        ],
+                        "IntervalSeconds": 2,
+                        "MaxAttempts": 6,
+                        "BackoffRate": 2
+                      }
+                    ],
+                    "End": true
+                  }
+                }
+             },
+             "Next": "PassOutput"
+            },
+            "PassOutput": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        }
+      "RoleArn": !Sub 'arn:aws:iam::${AWS::AccountId}:role/${StepFunctionRoleName}'
+  StepFunction2:
+    Type: 'AWS::StepFunctions::StateMachine'
+    Properties:
+      "StateMachineName" : "NGE-Box-Master-Step-Function"
+      "StateMachineType" : "STANDARD"
+      "LoggingConfiguration":
+          Destinations:
+            - CloudWatchLogsLogGroup:
+               LogGroupArn: !GetAtt MyStateMachineLogGroups.Arn
+          IncludeExecutionData: True
+          Level: ALL
+      "DefinitionString": !Sub |
+        {
+          "Comment": "NGE-Box Veeva Suggession Master state machine",
+          "StartAt": "Start_Databricks_Cluster",
+          "States": {
+            "Start_Databricks_Cluster": {
+              "Type": "Task",
+              "Resource": "${ClusterStartLambdaFunction.Arn}",
+              "Parameters": {
+                "Input": "Check_Databricks_Cluster_State"
+              },
+              "ResultPath": "$.Output",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "Process_Table_Loader"
+            },
+            "Process_Table_Loader": {
+              "Type": "Task",
+              "Resource": "${TableLoadFunction.Arn}",
+              "Parameters": {
+                "Input.$": "$.cluster_message_status"
+              },
+              "ResultPath": "$.Output",
+              "InputPath": "$.Output",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "ATL_Record_Validation"
+              },
+              "ATL_Record_Validation": {
+                "Type": "Task",
+                "Resource": "${ATLValidationLambdaFunction.Arn}",
+                "Parameters": {
+                  "Input.$": "$.job_message_status"
+                },
+                "InputPath": "$.Output",
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.AWSLambdaException",
+                      "Lambda.SdkClientException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2
+                  }
+                ],
+                "Next": "Metadata_Loader",
+                "ResultPath": "$.Output"
+              },
+              "Metadata_Loader": {
+                "Type": "Task",
+                "Resource": "${MasterLambdaFunction.Arn}",
+                "Parameters": {
+                  "Input.$": "$.job_message_status"
+                },
+                "InputPath": "$.Output",
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.AWSLambdaException",
+                      "Lambda.SdkClientException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2
+                  }
+                ],
+                "OutputPath": "$.Metadata",
+                "Next": "Usecase_Stepfunction"
+              },
+              "Usecase_Stepfunction": {    
+                "Type": "Map",
+                "ItemProcessor": {
+                  "ProcessorConfig": {
+                    "Mode": "INLINE"
+                  },
+                  "StartAt": "Step Functions StartExecution",
+                  "States": {
+                    "Step Functions StartExecution": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                      "Parameters": {
+                        "StateMachineArn.$": "$.Step_Function",
+                        "Input": {
+                          "Metadata.$": "$.data"
+                        }
+                      },
+                    "InputPath": "$",
+                    "ResultPath": "$",
+                    "End": true,
+                    "OutputPath": "$"
+                  }
+                }
+              },
+              "MaxConcurrency": 40,
+              "ItemsPath": "$",
+              "InputPath": "$",
+              "Next": "Processed_Table_Update",
+              "OutputPath": "$"
+            },
+            "Processed_Table_Update": {
+              "Type": "Task",
+              "Resource": "${TableUpdateLambdaFunction.Arn}",
+              "Parameters": {
+                "Input": "Update processed table"
+              },
+              "Retry": [
+                { 
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "Next": "S3_File_Loader",
+              "ResultPath": "$"
+            }, 
+            "S3_File_Loader": {
+              "Type": "Task",
+              "Resource": "${S3FileLoaderLambdaFunction.Arn}",
+              "Parameters": {
+                "Input": "$.job_message_status"
+              },
+              "InputPath": "$",
+              "OutputPath": "$.Output",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "ResultPath": "$.Output",
+              "Next": "Terminate_Databricks_Cluster"
+            },
+            "Terminate_Databricks_Cluster": {
+              "Type": "Task",
+              "Resource": "${ClusterTerminateLambdaFunction.Arn}",
+              "Parameters": {
+                "Input": "Terminate Databricks Cluster"
+              },
+              "InputPath": "$",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 6,
+                  "BackoffRate": 2
+                }
+              ],
+              "End": true,
+              "ResultPath": "$.Output",
+              "OutputPath": "$.Output"
+            }
+          }
+        }
+      "RoleArn": !Sub 'arn:aws:iam::${AWS::AccountId}:role/${StepFunctionRoleName}'
+
+  ClusterStartLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref ClusterStartLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath
+      Environment:
+        Variables:
+          ClusterId: !Ref ClusterIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref ClusterStartLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  TableLoadFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref TableLoadLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath1
+      Environment:
+        Variables:
+          ProcLoadJobId: !Ref ProcLoadJobIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref TableLoadFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  ATLValidationLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref ATLValidationLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath2
+      Environment:
+        Variables:
+          ATLJobId: !Ref ATLJobIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref ATLValidationLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  MasterLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref MasterLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath3
+      Environment:
+        Variables:
+          MetadataJobId: !Ref MetadataJobIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref MasterLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  JobExecutionLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref JobExecutionLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath4
+      Environment:
+        Variables:
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref JobExecutionLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  TableUpdateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref TableUpdateLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath5
+      Environment:
+        Variables:
+          ProcUpdateJobId: !Ref ProcUpdateJobIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref TableUpdateLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  S3FileLoaderLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref S3FileLoaderLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath6
+      Environment:
+        Variables:
+          S3JobId: !Ref S3JobIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref S3FileLoaderLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  ClusterTerminateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref ClusterTerminateLambdaName
+      Handler: 'lambda_function.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath7
+      Environment:
+        Variables:
+          ClusterId: !Ref ClusterIds
+          RestApiLambdaName: !Ref RestApiLambdasName
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref ClusterTerminateLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  RestApiLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Ref RestApiLambdasName
+      Handler: 'lambda_api.lambda_handler'
+      MemorySize: '128'
+      Runtime: python3.9
+      Timeout: '900'
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaCodePath8
+      Environment:
+        Variables:
+          DBTokenSecret: !Ref DBTokenSecrets
+          DBURL: !Ref DBURLs
+      Layers:
+        - !Ref LambdaLayer
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}'
+      VpcConfig:
+        SecurityGroupIds: !Ref SecurityGroupsID
+        SubnetIds: !Ref SubnetID
+  FunctionRolePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref RestApiLambdaFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${CodeBucketName}'
+
+  LambdaLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleArchitectures:
+        - x86_64
+      CompatibleRuntimes:
+        - python3.9
+      Content:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref LambdaLayerPath
+      Description: These are the libraries to be imported for the NGE-Box related lambda functions
+      LayerName: !Ref Layer
+
+Outputs:
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - ClusterStartLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - TableLoadFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - ATLValidationLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - MasterLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - JobExecutionLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - TableUpdateLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - S3FileLoaderLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - ClusterTerminateLambdaFunction
+      - Arn
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt 
+      - RestApiLambdaFunction
+      - Arn
