@@ -262,3 +262,84 @@ VALUES
 current_timestamp(),
 NULL,
 0);
+
+
+/*  New query for inserting into metadata_usecase_job for Takhzyro*/
+INSERT INTO com_us_alyt_ngebox.metadata_usecase_job (UseCase_Job_ID, USECASE_ID, Sequence_Nr, Job_ID, Nr_Params, Mapping_Params, CreatedDate, LastModifiedDate, IsDeleted)
+VALUES ('511|367238519505690', 511, 1, 367238519505690, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-NB-ATL-Validation-Job
+('511|305793310228536', 511, 2, 305793310228536, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-Check-Mandatory-Records-Microservice
+('511|809892230969831', 511, 3, 809892230969831, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-Validate-Account-Microservice
+('511|73435209655585', 511, 4, 73435209655585, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Omni-Microservice
+('511|864957890369833', 511, 5, 864957890369833, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Get-NPI-Microservice
+('511|530595765162780', 511, 6, 530595765162780, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Suggestion-Alignment-Microservice
+('511|122440956821508', 511, 7, 122440956821508, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-HR-Hold-Microservice
+('511|96654506581317', 511, 8, 96654506581317, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-PDRP-Restrictions-Microservice
+('511|145248723148216', 511, 9, 145248723148216, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-TKD-Sanction-Microservice
+('511|949666120842508', 511, 10, 949666120842508, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-NB-Error-Handling-Takhzyro-Microservice
+('511|954043722124297', 511, 11, 954043722124297, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-Processed-Table-Update-Job
+('511|694830172037601', 511, 12, 694830172037601, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-S3-File-Loader-Job
+('511|588094645571404', 511, 13, 588094645571404, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0);--NGE-Box-S3-To-S3-Loader-Job
+
+
+
+/*  New query for inserting into metadata_usecase_job for HEM*/
+INSERT INTO com_us_alyt_ngebox.metadata_usecase_job (UseCase_Job_ID, USECASE_ID, Sequence_Nr, Job_ID, Nr_Params, Mapping_Params, CreatedDate, LastModifiedDate, IsDeleted)
+VALUES ('512|367238519505690', 512, 1, 367238519505690, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-NB-ATL-Validation-Job
+('512|305793310228536', 512, 2, 305793310228536, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-Check-Mandatory-Records-Microservice
+('512|819933939535809', 512, 3, 819933939535809, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-NB-Validate-OMNI_ID-Microservice
+('512|130362855652974', 512, 4, 130362855652974, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-NB-Validate-NPI-Microservice
+('512|530595765162780', 512, 5, 530595765162780, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Suggestion-Alignment-Microservice
+('512|145248723148216', 512, 6, 145248723148216, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-TKD-Sanction-Microservice
+('512|949666120842508', 512, 7, 949666120842508, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-NB-Error-Handling-Microservice
+('512|954043722124297', 512, 8, 954043722124297, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-Processed-Table-Update-Job
+('512|694830172037601', 512, 9, 694830172037601, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-S3-File-Loader-Job
+('512|588094645571404', 512, 10, 588094645571404, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0);--NGE-Box-S3-To-S3-Loader-Job
+
+
+
+/* new query for  inserting into metadata_usecase for HEM */
+INSERT INTO com_us_alyt_ngebox.METADATA_USECASE
+VALUES
+('512',
+'HEM Factor VIII',
+'Advate/Adynovate',
+'Process Advate/Adynovate Suggestions for Veeva',
+"arn:aws:states:us-east-1:263789222982:stateMachine:NGE-Box-Usecase-Step-Function",
+current_timestamp(),
+NULL,
+0,
+60,
+NULL,
+NULL,
+NULL,
+NULL);
+
+update com_us_alyt_ngebox.METADATA_USECASE set 
+s3_bucket_name = 'tpc-aws-ted-dev-edpp-alyt-com-us-east-1', 
+s3_STG_path = 'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/HEM_FVIII_Switches/STG/',
+s3_archive_path = 'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/HEM_FVIII_Switches/ARCHIVE/',
+s3_veeva_bucket_name = 'tpc-aws-ted-dev-iics-edpp-mount-usvga',
+s3_veeva_path = 'amer_veeva/SrcFiles/iengage/data/current/',
+LastModifiedDate = current_timestamp()
+where usecase_id = 512;
+
+update com_us_alyt_ngebox.METADATA_USECASE set 
+s3_bucket_name = 'tpc-aws-ted-dev-edpp-alyt-com-us-east-1', 
+s3_STG_path = 'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/Takhzyro_Leads_Labs/STG/',
+s3_archive_path = 'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/Takhzyro_Leads_Labs/ARCHIVE/',
+s3_veeva_bucket_name = 'tpc-aws-ted-dev-iics-edpp-mount-usvga',
+s3_veeva_path = 'amer_veeva/SrcFiles/iengage/data/current/',
+LastModifiedDate = current_timestamp()
+where usecase_id = 511;
+
+update com_us_alyt_ngebox.METADATA_USECASE set 
+success_filename_prefix = 'Veeva_Suggestion_File_HEM_FVIII_Switches_',
+error_filename_prefix = 'Error_Veeva_Suggestion_File_HEM_FVIII_Switches_',
+LastModifiedDate = current_timestamp()
+where usecase_id = 512;
+
+update com_us_alyt_ngebox.METADATA_USECASE set 
+success_filename_prefix = 'Veeva_Suggestion_File_Takhzyro_Leads_labs_',
+error_filename_prefix = 'Error_Veeva_Suggestion_File_Takhzyro_Leads_labs_',
+LastModifiedDate = current_timestamp()
+where usecase_id = 511;
