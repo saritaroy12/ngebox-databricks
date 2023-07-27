@@ -1,0 +1,38 @@
+{
+  "Parameters": 
+  {
+    "ClusterStartLambdaName": "NGE-Box-Cluster-Start-Lambda",
+    "TableLoadLambdaName": "NGE-Box-Processed-Table-Load-Lambda",
+    "ATLValidationLambdaName": "NGE-Box-ATL-Record-Validation-Lambda",
+    "MasterLambdaName": "NGE-Box-Master-Lambda",
+    "JobExecutionLambdaName": "NGE-Box-Job-Execution-Lambda",
+    "TableUpdateLambdaName": "NGE-Box-Processed-Table-Update-Lambda",
+    "S3FileLoaderLambdaName": "NGE-Box-S3-File-Loader-Lambda",
+    "ClusterTerminateLambdaName": "NGE-Box-Cluster-Terminate-Lambda",
+    "RestApiLambdasName": "NGE-Box-Rest-Api-Lambda",
+    "CodeBucketName": "tpc-aws-ted-tst-edpp-alyt-com-us-east-1",
+    "LambdaRoleName": "TST-NGE-BOX-lambda-Execution-role",
+    "ClusterIds": "0208-080938-lvigq3iy",
+    "ProcLoadJobIds": "72074612632477",
+    "ProcUpdateJobIds": "137168768418852",
+    "ATLJobIds": "1093297341445757",
+    "MetadataJobIds": "149331140046898",
+    "S3JobIds": "393152239994399",
+    "DBTokenSecrets": "arn:aws:secretsmanager:us-east-1:881018545998:secret:Databricks_token_NGE_BOX_TST-iJ8zUm",
+    "DBURLs": "https://onetakeda-ustst.cloud.databricks.com",
+    "LambdaCodePath": "NGE_Box/codebase/NGE-Box-Cluster-Start-Lambda-E2-7b3dc131-6e19-4f85-89f0-4536d71330c2.zip",
+    "LambdaCodePath1": "NGE_Box/codebase/NGE-Box-Processed-Table-Load-Lambda-E2-07c5d6ec-c66f-4533-b6d8-c0a382484225.zip",
+    "LambdaCodePath2": "NGE_Box/codebase/NGE-Box-ATL-Record-Validation-Lambda-E2-89febce4-717d-40f4-83f9-5875092302e6.zip",
+    "LambdaCodePath3": "NGE_Box/codebase/NGE-Box-Master-Lambda-E2-affd6c29-26e2-48a1-8862-72982a902e0b.zip",
+    "LambdaCodePath4": "NGE_Box/codebase/NGE-Box-Job-Execution-Lambda-E2-bfebd461-4399-4ad2-aafd-de5ecf441e86.zip",
+    "LambdaCodePath5": "NGE_Box/codebase/NGE-Box-Processed-Table-Update-Lambda-E2-1769daef-3b4f-4e63-a7cd-3af5245de2c4.zip",
+    "LambdaCodePath6": "NGE_Box/codebase/NGE-Box-S3-File-Loader-Lambda-E2-2ee529e5-1e0b-47cd-abd5-ffe1b1f61057.zip",
+    "LambdaCodePath7": "NGE_Box/codebase/NGE-Box-Cluster-Terminate-Lambda-E2-cc907d28-9efa-4969-9244-7c92946946c4.zip",
+    "LambdaCodePath8": "NGE_Box/codebase/NGE-Box-Rest-Api-Lambda-d4cfacc2-aa5a-4741-ae54-9bc7a9269cb4.zip",
+    "LambdaLayerPath": "NGE_Box/codebase/NGE-Box-Layer-Py-Req-Lib-Test-1-a31d538c-1a74-45b4-9f83-32e8753533a9.zip",
+    "Layer": "NGE-Box-Layer-Py-Req-Lib-Test-1",
+    "StepFunctionRoleName": "TST-NGE-BOX-Stepfunction-Execution-role",
+    "SecurityGroupsID": "sg-0e840ae3b0de8b369",
+    "SubnetID": "subnet-02c8e5c46cef3d999, subnet-0374dbc6301b51022"
+  }
+}
