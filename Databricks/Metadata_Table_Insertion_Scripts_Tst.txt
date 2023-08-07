@@ -83,15 +83,29 @@ NULL,
 0,
 60);
 
-INSERT INTO com_us_alyt_ngebox.metadata_usecase_job (UseCase_Job_ID, USECASE_ID, Sequence_Nr, Job_ID, Nr_Params, Mapping_Params, CreatedDate, LastModifiedDate, IsDeleted)
-VALUES ('511|1115558436848824', 511, 1, 1115558436848824, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), 
-('511|830434833112449', 511, 2, 830434833112449, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), 
-('511|120334045728370', 511, 3, 120334045728370, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), 
-('511|450985081234694', 511, 4, 450985081234694, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),
-('511|780106934853783', 511, 5, 780106934853783, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), 
-('511|102769280246623', 511, 6, 102769280246623, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),
-('511|269357132598365', 511, 7, 269357132598365, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),
-('511|623961595822135', 511, 8, 623961595822135, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0);
+/* new query for  inserting into metadata_usecase for HEM */
+INSERT INTO com_us_alyt_ngebox.METADATA_USECASE
+VALUES
+('512',
+'HEM Factor VIII',
+'Advate/Adynovate',
+'Process Advate/Adynovate Suggestions for Veeva',
+"arn:aws:states:us-east-1:881018545998:stateMachine:NGE-Box-Usecase-Step-Function",
+current_timestamp(),
+NULL,
+0,
+60,
+NULL,
+'tpc-aws-ted-dev-edpp-alyt-com-us-east-1',
+'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/HEM_FVIII_Switches/STG/',
+'NGE_Box/IN_N_OUT/OUT/RD/IENGAGE_PUBLISH/HEM_FVIII_Switches/ARCHIVE/',
+'tpc-aws-ted-tst-iics-edpp-mount-usvga',
+'amer_veeva/SrcFiles/iengage/data/current/',
+'Veeva_Suggestion_File_HEM_FVIII_Switches_',
+'Error_Veeva_Suggestion_File_HEM_FVIII_Switches_');
+
+/* Insert into METADATA_USECASE_JOB for Takhzyro */
+
 
 INSERT INTO com_us_alyt_ngebox.METADATA_JOB
 VALUES
@@ -263,3 +277,31 @@ current_timestamp(),
 NULL,
 0);
 
+/*  New query for inserting into metadata_usecase_job for Takhzyro*/
+INSERT INTO com_us_alyt_ngebox.metadata_usecase_job (UseCase_Job_ID, USECASE_ID, Sequence_Nr, Job_ID, Nr_Params, Mapping_Params, CreatedDate, LastModifiedDate, IsDeleted)
+VALUES ('511|1093297341445757', 511, 1, 1093297341445757, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-NB-ATL-Validation-Job
+('511|1115558436848824', 511, 2, 1115558436848824, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-Check-Mandatory-Records-Microservice
+('511|830434833112449', 511, 3, 830434833112449, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-Validate-Account-Microservice
+('511|120334045728370', 511, 4, 120334045728370, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Omni-Microservice
+('511|450985081234694', 511, 5, 450985081234694, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Get-NPI-Microservice
+('511|780106934853783', 511, 6, 780106934853783, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Suggestion-Alignment-Microservice
+('511|102769280246623', 511, 7, 102769280246623, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-HR-Hold-Microservice
+('511|269357132598365', 511, 8, 269357132598365, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-PDRP-Restrictions-Microservice
+('511|623961595822135', 511, 9, 623961595822135, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-TKD-Sanction-Microservice
+('511|211399828030451', 511, 10, 211399828030451, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-NB-Error-Handling-Microservice
+('511|137168768418852', 511, 11, 137168768418852, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-Processed-Table-Update-Job
+('511|393152239994399', 511, 12, 393152239994399, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-S3-File-Loader-Job
+('511|199033646094091', 511, 13, 199033646094091, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0);--NGE-Box-S3-To-S3-Loader-Job
+
+/*  New query for inserting into metadata_usecase_job for HEM*/
+INSERT INTO com_us_alyt_ngebox.metadata_usecase_job (UseCase_Job_ID, USECASE_ID, Sequence_Nr, Job_ID, Nr_Params, Mapping_Params, CreatedDate, LastModifiedDate, IsDeleted)
+VALUES ('512|1093297341445757', 512, 1, 1093297341445757, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-NB-ATL-Validation-Job
+('512|1115558436848824', 512, 2, 1115558436848824, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-Box-Check-Mandatory-Records-Microservice
+('512|499236202929663', 512, 3, 499236202929663, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-NB-Validate-OMNI_ID-Microservice
+('512|488206236073355', 512, 4, 488206236073355, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), -- NGE-BOX-NB-Validate-NPI-Microservice
+('512|780106934853783', 512, 5, 780106934853783, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0), --NGE-BOX-Get-Suggestion-Alignment-Microservice
+('512|623961595822135', 512, 6, 623961595822135, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-Check-TKD-Sanction-Microservice
+('512|211399828030451', 512, 7, 211399828030451, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-BOX-NB-Error-Handling-Microservice
+('512|137168768418852', 512, 8, 137168768418852, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-Processed-Table-Update-Job
+('512|393152239994399', 512, 9, 393152239994399, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0),--NGE-Box-NB-S3-File-Loader-Job
+('512|199033646094091', 512, 10, 199033646094091, 0, 'NA', CURRENT_TIMESTAMP, NULL, 0);--NGE-Box-S3-To-S3-Loader-Job
